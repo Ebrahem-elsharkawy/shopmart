@@ -6,7 +6,6 @@ import { ProductI } from "@/interface/products";
 import { getSpecificProduct } from "@/services/products.services";
 import { ProductCardActions } from "@/components/product/product-card-actions";
 import Image from "next/image";
-import Link from "next/link";
 import { Star } from "lucide-react";
 
 import {
@@ -53,8 +52,9 @@ export default function ProductDetailsPage() {
       try {
         const { data } = await getSpecificProduct(productId!);
         setProduct(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch product");
+      } catch (err) {
+        const error = err as { message?: string };
+        setError(error.message || "Failed to fetch product");
       } finally {
         setLoading(false);
       }

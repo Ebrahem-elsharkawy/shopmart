@@ -43,7 +43,6 @@ export default function CartComponent() {
               {items.map(item => {
                 const productId = item.product._id;
                 const imageSrc = item.product.imageCover || FALLBACK_IMAGE;
-                const inWishlist = hasInWishlist(productId);
 
                 return (
                   <li key={productId} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-xl bg-white">

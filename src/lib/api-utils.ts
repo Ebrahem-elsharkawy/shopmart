@@ -1,5 +1,4 @@
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 export interface ApiError {
   message: string;
@@ -7,7 +6,7 @@ export interface ApiError {
   code?: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: ApiError;
   success: boolean;
@@ -32,12 +31,13 @@ export function handleGlobal401() {
 /**
  * Enhanced error handler that manages 401 responses and auth state
  */
-export function handleApiError(error: any, context: string): ApiError {
+export function handleApiError(error: unknown, context: string): ApiError {
+  const err = error as { message?: string; status?: number; code?: string };
   // Normalize error to consistent format
   const apiError: ApiError = {
-    message: typeof error?.message === 'string' ? error.message : 'Unknown error occurred',
-    status: error?.status,
-    code: error?.code,
+    message: typeof err?.message === 'string' ? err.message : 'Unknown error occurred',
+    status: err?.status,
+    code: err?.code,
   };
 
   // Log detailed error in development
@@ -61,13 +61,14 @@ export function handleApiError(error: any, context: string): ApiError {
 /**
  * Safe response validation with fallback defaults
  */
-export function safeResponseParse<T>(response: any, fallback: T): T {
+export function safeResponseParse<T>(response: unknown, fallback: T): T {
   if (!response || typeof response !== 'object') {
     return fallback;
   }
 
+  const res = response as { data?: T };
   // Handle common API response wrappers
-  const candidate = response.data ?? response;
+  const candidate = res.data ?? response;
   
   // If candidate is the expected type, return it
   if (Array.isArray(candidate) && Array.isArray(fallback)) {
@@ -91,7 +92,7 @@ export async function handleApiResponse(
     on401?: () => void;
     skipErrorLogging?: boolean;
   } = {}
-): Promise<any> {
+): Promise<unknown> {
   const contentType = response.headers.get("content-type");
   let data: Record<string, unknown> = {};
   let rawText = "";
@@ -101,7 +102,7 @@ export async function handleApiResponse(
     if (rawText) {
       data = JSON.parse(rawText);
     }
-  } catch (parseError) {
+  } catch {
     if (!options.skipErrorLogging) {
       console.error(`Failed to parse response for ${operation}:`, rawText);
     }
@@ -128,7 +129,7 @@ export async function handleApiResponse(
         handleGlobal401();
       }
       const error = new Error("Session expired. Please log in again.");
-      (error as any).status = 401;
+      (error as Error & { status?: number }).status = 401;
       throw error;
     }
 
@@ -145,7 +146,7 @@ export async function handleApiResponse(
 
     const message = (data?.message as string) || (data?.error as string) || `Failed to ${operation} (${response.status})`;
     const error = new Error(message);
-    (error as any).status = response.status;
+    (error as { status?: number }).status = response.status;
     throw error;
   }
 
@@ -157,7 +158,6 @@ export async function handleApiResponse(
  */
 export function useApiAuth() {
   const { data: session, status } = useSession();
-  const router = useRouter();
 
   const handle401 = () => {
     handleGlobal401();
@@ -214,7 +214,7 @@ export async function apiCall<T>(
     const data = await handleApiResponse(response, operation, { on401 });
     return data as T;
   } catch (error) {
-    if (fallback && (error as any).status !== 401) {
+    if (fallback && (error as { status?: number }).status !== 401) {
       return fallback;
     }
     throw error;

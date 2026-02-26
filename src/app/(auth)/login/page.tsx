@@ -9,11 +9,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { Suspense } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export default function Login() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/products";
@@ -58,75 +58,87 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen">
-      <div className="container mx-auto max-w-md sm:max-w-lg px-4 sm:px-6 py-8 sm:py-10 mt-6 sm:mt-10">
-        <h1 className="font-bold text-2xl sm:text-4xl">
-          Welcome to ShopMart 🛒
-        </h1>
-        <p className="text-lg sm:text-xl font-medium mt-1">Login Now</p>
+    <div className="container mx-auto max-w-md sm:max-w-lg px-4 sm:px-6 py-8 sm:py-10 mt-6 sm:mt-10">
+      <h1 className="font-bold text-2xl sm:text-4xl">
+        Welcome to ShopMart 🛒
+      </h1>
+      <p className="text-lg sm:text-xl font-medium mt-1">Login Now</p>
 
-        <form
-          className="w-full mx-auto mt-8 sm:mt-10 space-y-6 sm:space-y-8"
-          noValidate
+      <form
+        className="w-full mx-auto mt-8 sm:mt-10 space-y-6 sm:space-y-8"
+        noValidate
+      >
+        <Controller
+          name="email"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                type="email"
+                autoComplete="off"
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="password"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                type="password"
+                autoComplete="off"
+              />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
+
+        <Button
+          type="button"
+          className="w-full cursor-pointer"
+          onClick={form.handleSubmit(handleLogin)}
         >
-          <Controller
-            name="email"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                <Input
-                  {...field}
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
-                  type="email"
-                  autoComplete="off"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
+          {form.formState.isSubmitting ? <Spinner /> : "Login"}
+        </Button>
 
-          <Controller
-            name="password"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                <Input
-                  {...field}
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
-                  type="password"
-                  autoComplete="off"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Button 
-            type="button" 
-            className="w-full cursor-pointer"
-            onClick={form.handleSubmit(handleLogin)}
+        <p className="text-center mt-4">
+          <Link
+            href="/forgot-password"
+            className="text-primary hover:underline"
           >
-            {form.formState.isSubmitting ? <Spinner /> : "Login"}
-          </Button>
+            Forgot password?
+          </Link>
+        </p>
+      </form>
+    </div>
+  );
+}
 
-          <p className="text-center mt-4">
-            <Link
-              href="/forgot-password"
-              className="text-primary hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </p>
-        </form>
-      </div>
+export default function Login() {
+  return (
+    <main className="min-h-screen">
+      <Suspense fallback={
+        <div className="flex justify-center py-20">
+          <Spinner />
+        </div>
+      }>
+        <LoginForm />
+      </Suspense>
     </main>
   );
 }

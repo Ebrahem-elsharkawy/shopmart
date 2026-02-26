@@ -16,18 +16,32 @@ export default function YourOrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status !== "authenticated" || !session?.token) {
-      setLoading(false);
-      return;
+    let isMounted = true;
+
+    if (status === "authenticated" && session?.token) {
+      getOrders(session.token)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .then((res: any) => {
+          if (!isMounted) return;
+          const list = (res?.data ?? res) as OrderI[] | { orders?: OrderI[] };
+          const arr = Array.isArray(list) ? list : list?.orders ?? [];
+          setOrders(Array.isArray(arr) ? arr : []);
+        })
+        .catch(() => {
+          if (isMounted) setOrders([]);
+        })
+        .finally(() => {
+          if (isMounted) setLoading(false);
+        });
+    } else if (status === "unauthenticated") {
+      setTimeout(() => {
+        if (isMounted) setLoading(false);
+      }, 0);
     }
-    getOrders(session.token)
-      .then((res) => {
-        const list = (res?.data ?? res) as OrderI[] | { orders?: OrderI[] };
-        const arr = Array.isArray(list) ? list : list?.orders ?? [];
-        setOrders(Array.isArray(arr) ? arr : []);
-      })
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
+
+    return () => {
+      isMounted = false;
+    };
   }, [session?.token, status]);
 
   if (status === "loading" || loading) {

@@ -39,7 +39,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       // إذا مش موجود، نضيفه جديد
       return [...prev, item];
     });
-    toast.success("Item added to cart");
   };
 
   const updateQuantity = async (itemId: string, quantity: number) => {
@@ -50,7 +49,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           item._id === itemId ? { ...item, quantity } : item
         )
       );
-      toast.success("Cart updated");
     } catch {
       toast.error("Failed to update");
     } finally {
@@ -62,7 +60,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       setItems(prev => prev.filter(item => item._id !== itemId));
-      toast.success("Item removed");
     } catch {
       toast.error("Failed to remove");
     } finally {
