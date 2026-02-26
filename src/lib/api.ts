@@ -2,7 +2,7 @@
  * API base URL from environment. Must not include trailing slash.
  * Example: https://your-api.com or https://your-api.com/api/v1
  */
-export const API_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+export const API_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://ecommerce.routemisr.com/api/v1";
 
 /**
  * Auth endpoints (relative to API_URL). Adjust if your backend uses different paths.

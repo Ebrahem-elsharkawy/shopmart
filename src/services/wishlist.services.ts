@@ -1,5 +1,5 @@
 import { API_URL } from "@/lib/api";
-import { apiCall, handleApiResponse, createApiHeaders } from "@/lib/api-utils";
+import { apiCall } from "@/lib/api-utils";
 
 export async function getWishlist(token: string) {
   if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");

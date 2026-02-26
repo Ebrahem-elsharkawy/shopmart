@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid response from server");
         }
 
-        const r = response as Record<string, any>;
+        const r = response as { token?: string; message?: string; statusMsg?: string };
 
         // ✅ أهم تعديل: تحقق من وجود token فقط
         if (!r?.token) {
@@ -89,8 +89,11 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       if (session && token) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session.user = token.user as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session as any).token = token.token;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session as any).id = token.id;
       }
       return session;

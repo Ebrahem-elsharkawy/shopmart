@@ -193,8 +193,8 @@ export default function DebugAuthPage() {
       <Card className="p-6 mt-6 bg-yellow-50">
         <h2 className="text-xl font-semibold mb-4">Instructions</h2>
         <ol className="list-decimal list-inside space-y-2">
-          <li>Make sure you're logged in</li>
-          <li>Click "Run API Tests" button</li>
+          <li>Make sure you&apos;re logged in</li>
+          <li>Click &quot;Run API Tests&quot; button</li>
           <li>Check which test passes (status 200)</li>
           <li>Update your service files to use the working format</li>
           <li>If all tests fail, check the error messages for clues</li>

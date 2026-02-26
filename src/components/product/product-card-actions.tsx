@@ -44,8 +44,8 @@ export const ProductCardActions = ({ product, className }: ProductCardActionsPro
     if (status === "loading") return;
     setIsTogglingWishlist(true);
     try {
-      if (!inWishlist) addToWishlist(product._id);
-      else removeFromWishlist(product._id);
+      if (!inWishlist) addToWishlist(product);
+      else await removeFromWishlist(product._id);
       toast.success(inWishlist ? "Removed from wishlist" : "Added to wishlist");
     } catch {
       toast.error("Failed to update wishlist");

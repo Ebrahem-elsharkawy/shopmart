@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useCart } from "@/context/cart-context";
 import { createOrder } from "@/services/orders.services";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { CreditCard, Banknote } from "lucide-react";
@@ -52,10 +52,11 @@ export default function CheckoutPage() {
     if (!token) return;
     setSubmitting(true);
     try {
-      const res = await createOrder(token, {
+      const res = (await createOrder(token, {
         paymentMethod: paymentMethod === "online" ? "online" : "cash",
         shippingAddress: address || undefined,
-      });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
       if (res?.message === "Success" || res?.status === "success" || res?.data?.order) {
         toast.success("Order placed successfully.");
         router.push("/your-orders");

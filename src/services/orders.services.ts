@@ -1,27 +1,29 @@
 import { API_URL } from "@/lib/api";
+import { apiCall } from "@/lib/api-utils";
 
-function headers(token: string) {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-}
+export async function getOrders(token: string): Promise<unknown> {
+  if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
+  const url = `${API_URL}/orders`;
 
-export async function getOrders(token: string) {
-  const response = await fetch(`${API_URL}/orders`, { headers: headers(token), cache: "no-store" });
-  const data = await response.json();
-  return data;
+  return apiCall<unknown>(url, {
+    token,
+    operation: "load orders",
+    cache: "no-store",
+    fallback: [],
+  });
 }
 
 export async function createOrder(
   token: string,
   payload: { paymentMethod: "cash" | "online" | "card"; shippingAddress?: string }
-) {
-  const response = await fetch(`${API_URL}/orders`, {
+): Promise<unknown> {
+  if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
+  const url = `${API_URL}/orders`;
+
+  return apiCall<unknown>(url, {
     method: "POST",
-    headers: headers(token),
+    token,
     body: JSON.stringify(payload),
+    operation: "create order",
   });
-  const data = await response.json();
-  return data;
 }
