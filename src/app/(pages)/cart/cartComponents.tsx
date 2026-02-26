@@ -13,7 +13,6 @@ const FALLBACK_IMAGE = "/fallback-product.png";
 
 export default function CartComponent() {
   const { items, loading, totalPrice, updateQuantity, removeItem } = useCart();
-  const { hasInWishlist } = useWishlist();
 
   if (loading) {
     return (
