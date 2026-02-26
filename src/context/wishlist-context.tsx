@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { WishlistItemI } from "@/interface/wishlist";
 import { ProductI } from "@/interface/products";
 import { useSession } from "next-auth/react";
@@ -22,25 +23,29 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const { data: session, status } = useSession();
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async () => {
     if (status !== "authenticated" || !session?.token) return;
     setLoading(true);
     try {
-      const res = await getWishlist(session.token);
-      if (res?.status === "success") {
-        const wishlistData = res.data || [];
+      const res: any = await getWishlist(session.token);
+      if (res?.status === "success" || Array.isArray(res?.data) || Array.isArray(res)) {
+        const wishlistData = res.data || (Array.isArray(res) ? res : []);
         // Normalize wishlist items
         setItems(wishlistData.map((p: any) => ({
           _id: p._id,
           product: p
         })));
       }
-    } catch (error) {
-      console.error("Failed to fetch wishlist:", error);
+    } catch (error: any) {
+      // 401 is handled globally
+      if (error?.status !== 401) {
+        console.error("🔴 Failed to fetch wishlist:", error);
+        toast.error("Could not load your wishlist.");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [status, session?.token]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -48,7 +53,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     } else if (status === "unauthenticated") {
       setItems([]);
     }
-  }, [status, session?.token]);
+  }, [status, session?.token, fetchWishlist]);
 
   const addToWishlist = async (product: ProductI) => {
     if (status !== "authenticated" || !session?.token) {
@@ -57,7 +62,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(true);
     try {
-      const res = await addToWishlistApi(product._id, session.token);
+      const res: any = await addToWishlistApi(product._id, session.token);
       if (res?.status === "success") {
         toast.success("Added to wishlist");
         await fetchWishlist();
@@ -73,7 +78,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     if (status !== "authenticated" || !session?.token) return;
     setLoading(true);
     try {
-      const res = await removeFromWishlistApi(productId, session.token);
+      const res: any = await removeFromWishlistApi(productId, session.token);
       if (res?.status === "success") {
         toast.success("Removed from wishlist");
         await fetchWishlist();

@@ -15,17 +15,13 @@ export function ProtectedRoute({ children, redirectTo = "/login" }: ProtectedRou
   const router = useRouter();
 
   useEffect(() => {
-    console.log("🛡️ ProtectedRoute - Auth status:", status);
-    console.log("🛡️ ProtectedRoute - Session:", session);
     
     if (status === "loading") return; // Still loading, don't do anything yet
 
     if (status === "unauthenticated") {
-      console.log("🚪 User not authenticated, redirecting to:", redirectTo);
       // Store the current path for redirect after login
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        console.log("📍 Storing current path:", currentPath);
         if (currentPath !== '/login' && currentPath !== '/') {
           sessionStorage.setItem('redirectAfterLogin', currentPath);
         }
@@ -36,10 +32,9 @@ export function ProtectedRoute({ children, redirectTo = "/login" }: ProtectedRou
 
     // If authenticated, clear any stored redirect
     if (status === "authenticated" && typeof window !== 'undefined') {
-      console.log("✅ User authenticated, clearing stored redirect");
       sessionStorage.removeItem('redirectAfterLogin');
     }
-  }, [status, router, redirectTo]);
+  }, [status, session, router, redirectTo]);
 
   // Show loading spinner while checking auth status
   if (status === "loading") {
@@ -56,6 +51,5 @@ export function ProtectedRoute({ children, redirectTo = "/login" }: ProtectedRou
   }
 
   // If authenticated, render children
-  console.log("🎉 Rendering protected content");
   return <>{children}</>;
 }

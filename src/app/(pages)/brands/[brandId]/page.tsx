@@ -67,7 +67,7 @@ export default async function BrandDetailsPage({
 
         <h2 className="text-xl font-semibold mt-10 mb-4">Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((prod) => (
+          {Array.isArray(products) && products.map((prod: ProductI) => (
             <Card key={prod._id}>
               <Link href={`/products/${prod._id}`}>
                 <Image

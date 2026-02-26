@@ -25,9 +25,7 @@ export default function Register() {
 
   });
   async function handleRegister(values:registerSchemaType) {
-      console.log(values)
       const response=await signUpUser(values)
-      console.log(response);
       if(response.message==="Success" || response.message==="success"){
         toast.success("Signup successfully")
         router.push("/login")

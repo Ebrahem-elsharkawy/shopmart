@@ -177,18 +177,23 @@ export function useApiAuth() {
 }
 
 /**
- * Common headers factory with auth token
+ * Common headers factory with optional auth token
  */
-export function createApiHeaders(token: string, additionalHeaders: Record<string, string> = {}) {
-  return {
+export function createApiHeaders(token?: string, additionalHeaders: Record<string, string> = {}) {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
     ...additionalHeaders,
   };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
 }
 
 /**
- * Wrapper for API calls with consistent error handling
+ * Wrapper for API calls with consistent error handling and network resilience
  */
 export async function apiCall<T>(
   url: string,
@@ -201,20 +206,28 @@ export async function apiCall<T>(
 ): Promise<T> {
   const { token, on401, operation = "API call", fallback, ...fetchOptions } = options;
 
-  if (!token) {
-    throw new Error("Authentication token is required");
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: createApiHeaders(token),
+      ...fetchOptions,
+    });
+  } catch (error) {
+    const networkError = new Error(`Network error during ${operation}. Please check your connection.`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (networkError as any).originalError = error;
+    throw networkError;
   }
-
-  const response = await fetch(url, {
-    headers: createApiHeaders(token),
-    ...fetchOptions,
-  });
 
   try {
     const data = await handleApiResponse(response, operation, { on401 });
     return data as T;
   } catch (error) {
-    if (fallback && (error as { status?: number }).status !== 401) {
+    // If a fallback is provided and it's not an auth error, return fallback
+    if (fallback !== undefined && (error as { status?: number }).status !== 401) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(`⚠️ Using fallback for ${operation} due to error:`, error);
+      }
       return fallback;
     }
     throw error;
