@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { API_URL, AUTH_ENDPOINTS } from "@/lib/api";
+import { apiCall } from "@/lib/api-utils";
 import {
   changePasswordSchemaType,
   forgotPasswordSchemaType,
@@ -7,104 +9,54 @@ import {
   resetPasswordSchemaType,
 } from "@/lib/validationSchema/auth.schema";
 
-async function parseJson(response: Response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
-export async function signInUser(formData: loginSchemaType) {
+export async function signInUser(formData: loginSchemaType): Promise<any> {
   if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
 
-  const response = await fetch(`${API_URL}${AUTH_ENDPOINTS.signin}`, {
+  return apiCall<any>(`${API_URL}${AUTH_ENDPOINTS.signin}`, {
     method: "POST",
     body: JSON.stringify(formData),
-    headers: { "Content-Type": "application/json" },
+    operation: "sign in",
   });
-
-  const data = await parseJson(response);
-
-  if (!response.ok) {
-    throw new Error((data?.message as string) || `Sign in failed (${response.status})`);
-  }
-
-  return data;
 }
 
-export async function signUpUser(formData: registerSchemaType) {
+export async function signUpUser(formData: registerSchemaType): Promise<any> {
   if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
 
-  const response = await fetch(`${API_URL}${AUTH_ENDPOINTS.signup}`, {
+  return apiCall<any>(`${API_URL}${AUTH_ENDPOINTS.signup}`, {
     method: "POST",
     body: JSON.stringify(formData),
-    headers: { "Content-Type": "application/json" },
+    operation: "sign up",
   });
-
-  const data = await parseJson(response);
-
-  if (!response.ok) {
-    throw new Error((data?.message as string) || `Sign up failed (${response.status})`);
-  }
-
-  return data;
 }
 
-export async function forgotPassword(formData: forgotPasswordSchemaType) {
+export async function forgotPassword(formData: forgotPasswordSchemaType): Promise<any> {
   if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
 
-  const response = await fetch(`${API_URL}${AUTH_ENDPOINTS.forgotPassword}`, {
+  return apiCall<any>(`${API_URL}${AUTH_ENDPOINTS.forgotPassword}`, {
     method: "POST",
     body: JSON.stringify(formData),
-    headers: { "Content-Type": "application/json" },
+    operation: "request password reset",
   });
-
-  const data = await parseJson(response);
-
-  if (!response.ok) {
-    throw new Error((data?.message as string) || `Forgot password request failed (${response.status})`);
-  }
-
-  return data;
 }
 
-export async function resetPassword(formData: resetPasswordSchemaType) {
+export async function resetPassword(formData: resetPasswordSchemaType): Promise<any> {
   if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
 
-  const response = await fetch(`${API_URL}${AUTH_ENDPOINTS.resetPassword}`, {
+  return apiCall<any>(`${API_URL}${AUTH_ENDPOINTS.resetPassword}`, {
     method: "PUT",
     body: JSON.stringify(formData),
-    headers: { "Content-Type": "application/json" },
+    operation: "reset password",
   });
-
-  const data = await parseJson(response);
-
-  if (!response.ok) {
-    throw new Error((data?.message as string) || `Reset password failed (${response.status})`);
-  }
-
-  return data;
 }
 
-export async function changePassword(formData: changePasswordSchemaType, token: string) {
+export async function changePassword(formData: changePasswordSchemaType, token: string): Promise<any> {
   if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
   if (!token) throw new Error("Authentication token is required");
 
-  const response = await fetch(`${API_URL}${AUTH_ENDPOINTS.changeMyPassword}`, {
+  return apiCall<any>(`${API_URL}${AUTH_ENDPOINTS.changeMyPassword}`, {
     method: "PUT",
+    token,
     body: JSON.stringify(formData),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    operation: "change password",
   });
-
-  const data = await parseJson(response);
-
-  if (!response.ok) {
-    throw new Error((data?.message as string) || `Change password failed (${response.status})`);
-  }
-
-  return data;
 }

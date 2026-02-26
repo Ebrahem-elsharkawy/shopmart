@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ProductI } from "@/interface/products";
 import { getAllProducts } from "@/services/products.services";
 import { ProductCardActions } from "@/components/product/product-card-actions";
+import { Spinner } from "@/components/ui/spinner";
 
 import {
   Card,
@@ -31,7 +32,7 @@ function ProductsList() {
       setLoading(true);
       try {
         const { data } = await getAllProducts();
-        let filtered = data || [];
+        let filtered = Array.isArray(data) ? data : [];
         if (search) {
           const s = search.toLowerCase();
           filtered = filtered.filter((p: ProductI) =>
@@ -50,7 +51,7 @@ function ProductsList() {
       }
     }
     fetchProducts();
-  }, []);
+  }, [search]);
 
   if (loading) return (
     <div className="flex justify-center py-20">
@@ -70,10 +71,10 @@ function ProductsList() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {search && (
-        <h1 className="text-2xl font-bold mb-8">Search results for "{search}"</h1>
+        <h1 className="text-2xl font-bold mb-8">Search results for &quot;{search}&quot;</h1>
       )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {products.map((product) => (
+          {Array.isArray(products) && products.map((product: ProductI) => (
             <Card key={product._id} className="flex flex-col">
               <Link href={`/products/${product._id}`}>
                 <Image

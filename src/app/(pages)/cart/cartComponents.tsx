@@ -7,7 +7,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useCart } from "@/context/cart-context";
-import { useWishlist } from "@/context/wishlist-context";
 
 const FALLBACK_IMAGE = "/fallback-product.png";
 

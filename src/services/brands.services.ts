@@ -1,13 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { API_URL } from "@/lib/api";
+import { apiCall } from "@/lib/api-utils";
 
-export async function getAllBrands() {
-  const response = await fetch(`${API_URL}/brands`);
-  const data = await response.json();
-  return data;
+export async function getAllBrands(): Promise<any> {
+  return apiCall<any>(`${API_URL}/brands`, {
+    operation: "fetch all brands",
+  });
 }
 
-export async function getBrandById(id: string) {
-  const response = await fetch(`${API_URL}/brands/${id}`);
-  const data = await response.json();
-  return data;
+export async function getBrandById(id: string): Promise<any> {
+  return apiCall<any>(`${API_URL}/brands/${id}`, {
+    operation: "fetch brand details",
+  });
 }

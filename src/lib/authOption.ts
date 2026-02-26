@@ -34,8 +34,6 @@ export const authOptions: NextAuthOptions = {
           password: credentials.password,
         });
 
-        console.log("Auth response:", response);
-
         if (!response || typeof response !== "object") {
           throw new Error("Invalid response from server");
         }
@@ -65,8 +63,6 @@ export const authOptions: NextAuthOptions = {
           email: decoded?.email || credentials.email,
           role: decoded?.role || "user",
         };
-
-        console.log("Authorization successful for:", userInfo.email);
 
         return {
           id: String(userId),

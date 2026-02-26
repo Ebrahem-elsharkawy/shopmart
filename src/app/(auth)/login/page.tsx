@@ -25,7 +25,6 @@ function LoginForm() {
 
   async function handleLogin(values: loginSchemaType) {
     try {
-      console.log(" Login attempt:", values.email);
       
       const result = await signIn("credentials", {
         email: values.email,
@@ -33,7 +32,6 @@ function LoginForm() {
         redirect: false,
       });
 
-      console.log(" SignIn result:", result);
 
       if (result?.error) {
         console.error(" Login error:", result.error);
@@ -42,7 +40,6 @@ function LoginForm() {
       }
       
       if (result?.ok) {
-        console.log(" Login successful");
         toast.success("Logged in successfully");
         
         // Direct redirect without delay or session update

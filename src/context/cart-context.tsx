@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { CartItemI } from "@/interface/cart";
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { getCart, addToCart as addToCartApi, updateCartItem, removeFromCart } from "@/services/cart.services";
@@ -25,29 +26,37 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const { data: session, status } = useSession();
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     if (status !== "authenticated" || !session?.token) return;
 
     setLoading(true);
     try {
-      const res = await getCart(session.token);
-      if (res?.status === "success" || res?.data) {
-        const cartData = res.data;
-        setItems(cartData.products?.map((p: any) => ({
-          _id: p._id,
-          product: p.product,
-          quantity: p.count || p.quantity,
-          price: p.price
-        })) || []);
-        setCartId(cartData._id);
-        setTotalPrice(cartData.totalCartPrice);
+      const res: any = await getCart(session.token);
+      // Check for success status or data presence (some APIs wrap in 'data', some don't)
+      if (res?.status === "success" || res?.data || (res && res.products)) {
+        const cartData = res.data || (res.products ? res : null);
+
+        if (cartData) {
+          setItems(cartData.products?.map((p: any) => ({
+            _id: p._id,
+            product: p.product,
+            quantity: p.count || p.quantity,
+            price: p.price
+          })) || []);
+          setCartId(cartData._id || null);
+          setTotalPrice(cartData.totalCartPrice || 0);
+        }
       }
-    } catch (error) {
-      console.error("Failed to fetch cart:", error);
+    } catch (error: any) {
+      // 401 is handled globally by apiCall/handleApiResponse
+      if (error?.status !== 401) {
+        console.error("🔴 Failed to fetch cart:", error);
+        toast.error("Could not load your cart. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [status, session?.token]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -57,7 +66,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setCartId(null);
       setTotalPrice(0);
     }
-  }, [status, session?.token]);
+  }, [status, session?.token, fetchCart]);
 
   const addToCart = async (productId: string) => {
     if (status !== "authenticated" || !session?.token) {
@@ -66,7 +75,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(true);
     try {
-      const res = await addToCartApi(productId, 1, session.token);
+      const res: any = await addToCartApi(productId, 1, session.token);
       if (res?.status === "success") {
         toast.success("Added to cart");
         await fetchCart();
@@ -82,7 +91,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!session?.token) return;
     setLoading(true);
     try {
-      const res = await updateCartItem(itemId, quantity, session.token);
+      const res: any = await updateCartItem(itemId, quantity, session.token);
       if (res?.status === "success") {
         await fetchCart();
       }
@@ -97,7 +106,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!session?.token) return;
     setLoading(true);
     try {
-      const res = await removeFromCart(itemId, session.token);
+      const res: any = await removeFromCart(itemId, session.token);
       if (res?.status === "success") {
         toast.success("Item removed");
         await fetchCart();
