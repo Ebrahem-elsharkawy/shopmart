@@ -57,7 +57,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(true);
     try {
-      const res = await addToWishlistApi(product._id, session.token);
+      const res: any = await addToWishlistApi(product._id, session.token);
       if (res?.status === "success") {
         toast.success("Added to wishlist");
         await fetchWishlist();
@@ -73,7 +73,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     if (status !== "authenticated" || !session?.token) return;
     setLoading(true);
     try {
-      const res = await removeFromWishlistApi(productId, session.token);
+      const res: any = await removeFromWishlistApi(productId, session.token);
       if (res?.status === "success") {
         toast.success("Removed from wishlist");
         await fetchWishlist();

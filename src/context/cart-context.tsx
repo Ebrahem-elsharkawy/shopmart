@@ -66,7 +66,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(true);
     try {
-      const res = await addToCartApi(productId, 1, session.token);
+      const res: any = await addToCartApi(productId, 1, session.token);
       if (res?.status === "success") {
         toast.success("Added to cart");
         await fetchCart();
@@ -82,7 +82,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!session?.token) return;
     setLoading(true);
     try {
-      const res = await updateCartItem(itemId, quantity, session.token);
+      const res: any = await updateCartItem(itemId, quantity, session.token);
       if (res?.status === "success") {
         await fetchCart();
       }
@@ -97,7 +97,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!session?.token) return;
     setLoading(true);
     try {
-      const res = await removeFromCart(itemId, session.token);
+      const res: any = await removeFromCart(itemId, session.token);
       if (res?.status === "success") {
         toast.success("Item removed");
         await fetchCart();

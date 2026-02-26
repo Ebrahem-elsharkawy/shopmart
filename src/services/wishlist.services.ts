@@ -7,10 +7,10 @@ export async function getWishlist(token: string) {
 
   const url = `${API_URL}/wishlist`;
 
-  return apiCall(url, {
+  return apiCall<any>(url, {
     token,
     operation: "load wishlist",
-    fallback: { wishlist: [], items: [] },
+    fallback: { status: "error", data: null },
   });
 }
 

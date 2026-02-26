@@ -7,10 +7,10 @@ export async function getCart(token: string) {
 
   const url = `${API_URL}/cart`;
 
-  return apiCall(url, {
+  return apiCall<any>(url, {
     token,
     operation: "load cart",
-    fallback: { cart: null, items: [], totalCartPrice: 0, totalPrice: 0 },
+    fallback: { status: "error", data: null },
   });
 }
 

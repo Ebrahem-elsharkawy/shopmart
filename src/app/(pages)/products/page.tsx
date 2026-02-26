@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ProductI } from "@/interface/products";
 import { getAllProducts } from "@/services/products.services";
 import { ProductCardActions } from "@/components/product/product-card-actions";
+import { Spinner } from "@/components/ui/spinner";
 
 import {
   Card,
@@ -50,7 +51,7 @@ function ProductsList() {
       }
     }
     fetchProducts();
-  }, []);
+  }, [search]);
 
   if (loading) return (
     <div className="flex justify-center py-20">
