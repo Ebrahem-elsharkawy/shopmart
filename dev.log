@@ -1,0 +1,19 @@
+
+> shopmart@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3005
+- Network:       http://192.168.0.2:3005
+
+✓ Starting...
+✓ Ready in 3s
+○ Compiling / ...
+ GET / 200 in 9.5s (compile: 7.9s, render: 1565ms)
+ GET / 200 in 926ms (compile: 6ms, render: 921ms)
+[next-auth][warn][NEXTAUTH_URL]
+https://next-auth.js.org/warnings#nextauth_url
+[next-auth][warn][NO_SECRET]
+https://next-auth.js.org/warnings#no_secret
+ GET /api/auth/session 200 in 2.5s (compile: 2.5s, render: 41ms)
+ GET /products?search=laptop 200 in 395ms (compile: 317ms, render: 78ms)

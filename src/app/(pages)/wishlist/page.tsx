@@ -6,19 +6,13 @@ import { useWishlist } from "@/context/wishlist-context";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Heart, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 
 export default function WishlistPage() {
   const { items, loading, removeFromWishlist } = useWishlist();
 
   const handleRemove = async (productId: string) => {
-    try {
-      await removeFromWishlist(productId);
-      toast.success("Removed from wishlist");
-    } catch {
-      toast.error("Failed to remove");
-    }
+    await removeFromWishlist(productId);
   };
 
   if (loading) {

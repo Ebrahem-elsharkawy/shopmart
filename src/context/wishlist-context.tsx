@@ -1,14 +1,18 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { WishlistItemI } from "@/interface/wishlist";
 import { ProductI } from "@/interface/products";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { getWishlist, addToWishlist as addToWishlistApi, removeFromWishlist as removeFromWishlistApi } from "@/services/wishlist.services";
 
 interface WishlistContextType {
   items: WishlistItemI[];
   loading: boolean;
-  addToWishlist: (product: ProductI) => void;
-  removeFromWishlist: (id: string) => Promise<void>;
-  hasInWishlist: (id: string) => boolean;
+  refreshWishlist: () => Promise<void>;
+  addToWishlist: (product: ProductI) => Promise<void>;
+  removeFromWishlist: (productId: string) => Promise<void>;
+  hasInWishlist: (productId: string) => boolean;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -16,29 +20,76 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<WishlistItemI[]>([]);
   const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-  const addToWishlist = (product: ProductI) => {
-    const newItem: WishlistItemI = {
-      _id: Math.random().toString(36).substring(2, 9),
-      product: product
-    };
-    setItems(prev => [...prev, newItem]);
-  };
-
-  const removeFromWishlist = async (id: string) => {
+  const fetchWishlist = async () => {
+    if (status !== "authenticated" || !session?.token) return;
     setLoading(true);
     try {
-      setItems(prev => prev.filter(item => (item.product?._id || item._id) !== id));
+      const res = await getWishlist(session.token);
+      if (res?.status === "success") {
+        const wishlistData = res.data || [];
+        // Normalize wishlist items
+        setItems(wishlistData.map((p: any) => ({
+          _id: p._id,
+          product: p
+        })));
+      }
+    } catch (error) {
+      console.error("Failed to fetch wishlist:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const hasInWishlist = (id: string) =>
-    items.some(item => (item.product?._id || item._id) === id);
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchWishlist();
+    } else if (status === "unauthenticated") {
+      setItems([]);
+    }
+  }, [status, session?.token]);
+
+  const addToWishlist = async (product: ProductI) => {
+    if (status !== "authenticated" || !session?.token) {
+      toast.error("Please login to manage wishlist");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await addToWishlistApi(product._id, session.token);
+      if (res?.status === "success") {
+        toast.success("Added to wishlist");
+        await fetchWishlist();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add to wishlist");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeFromWishlist = async (productId: string) => {
+    if (status !== "authenticated" || !session?.token) return;
+    setLoading(true);
+    try {
+      const res = await removeFromWishlistApi(productId, session.token);
+      if (res?.status === "success") {
+        toast.success("Removed from wishlist");
+        await fetchWishlist();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove from wishlist");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasInWishlist = (productId: string) =>
+    items.some(item => (item.product?._id || item._id) === productId);
 
   return (
-    <WishlistContext.Provider value={{ items, loading, addToWishlist, removeFromWishlist, hasInWishlist }}>
+    <WishlistContext.Provider value={{ items, loading, refreshWishlist: fetchWishlist, addToWishlist, removeFromWishlist, hasInWishlist }}>
       {children}
     </WishlistContext.Provider>
   );

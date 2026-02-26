@@ -30,11 +30,7 @@ export default async function CategoryDetailsPage({
   const { categoryId } = await params;
   const catRes = await getCategoryById(categoryId);
   const category: CategoryI = catRes?.data ?? catRes;
-  const { data: productsData } = await getAllProducts();
-  const allProducts: ProductI[] = productsData ?? [];
-  const products = allProducts.filter(
-    (p) => p.category?._id === categoryId || p.category?.slug === category?.slug
-  );
+  const { data: products } = await getAllProducts({ category: categoryId });
 
   return (
     <main className="min-h-screen">

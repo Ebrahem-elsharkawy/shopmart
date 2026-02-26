@@ -7,7 +7,9 @@ import { ProductI } from "@/interface/products";
 import { BrandI } from "@/interface/brands";
 import { CategoryI } from "@/interface/categories";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShoppingBag, Star } from "lucide-react";
+import { ArrowRight, ShoppingBag, Star, Mail } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Input } from "@/components/ui/input";
 
 export default async function Home() {
   const [productsRes, brandsRes, categoriesRes] = await Promise.all([
@@ -120,39 +122,62 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Categories */}
+      {/* Categories Slider */}
       {Array.isArray(categories) && categories.length > 0 && (
         <section className="max-w-7xl mx-auto py-10 sm:py-16 px-4 sm:px-6 border-t">
-          <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8">Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {categories.slice(0, 8).map((cat) => (
-              <Link
-                key={cat._id}
-                href={`/categories/${cat._id}`}
-                className="rounded-xl border bg-white overflow-hidden hover:shadow-lg transition group"
-              >
-                <div className="relative aspect-[4/3] bg-zinc-100">
-                  <Image
-                    src={cat.image || "/placeholder.svg"}
-                    alt={cat.name}
-                    fill
-                    className="object-contain p-4 group-hover:scale-105 transition"
-                  />
-                </div>
-                <div className="p-4 font-semibold text-center">{cat.name}</div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-6 text-center">
-            <Button asChild variant="outline">
-              <Link href="/categories">All categories</Link>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold">Shop by Category</h2>
+            <Button asChild variant="ghost" className="hidden sm:flex">
+              <Link href="/categories">View all</Link>
             </Button>
           </div>
+
+          <Carousel className="w-full">
+            <CarouselContent className="-ml-4">
+              {categories.map((cat) => (
+                <CarouselItem key={cat._id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <Link
+                    href={`/categories/${cat._id}`}
+                    className="flex flex-col items-center group"
+                  >
+                    <div className="relative aspect-square w-full rounded-full border bg-white overflow-hidden p-6 hover:shadow-md transition">
+                      <Image
+                        src={cat.image || "/placeholder.svg"}
+                        alt={cat.name}
+                        fill
+                        className="object-contain p-4 group-hover:scale-110 transition duration-300"
+                      />
+                    </div>
+                    <span className="mt-4 font-semibold text-center">{cat.name}</span>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="hidden md:block">
+              <CarouselPrevious className="-left-12" />
+              <CarouselNext className="-right-12" />
+            </div>
+          </Carousel>
         </section>
       )}
 
+      {/* Newsletter */}
+      <section className="bg-white border-y py-16 px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="inline-flex p-3 rounded-full bg-zinc-100 mb-6">
+            <Mail className="size-6 text-zinc-900" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">Stay updated!</h2>
+          <p className="text-zinc-600 mb-8">Subscribe to our newsletter and be the first to know about new arrivals and exclusive offers.</p>
+          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <Input type="email" placeholder="Enter your email" className="rounded-full" />
+            <Button type="button" className="rounded-full bg-zinc-900 hover:bg-zinc-800">Subscribe</Button>
+          </form>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="bg-zinc-900 text-white py-12 sm:py-16 px-4 sm:px-6 mt-10 sm:mt-16">
+      <section className="bg-zinc-900 text-white py-12 sm:py-16 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-xl sm:text-2xl font-bold">Ready to shop?</h2>
           <p className="mt-2 text-zinc-300">Create an account or sign in to add items to cart and wishlist.</p>
