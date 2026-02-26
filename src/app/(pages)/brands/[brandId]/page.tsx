@@ -30,9 +30,7 @@ export default async function BrandDetailsPage({
   const { brandId } = await params;
   const brandRes = await getBrandById(brandId);
   const brand: BrandI = brandRes?.data ?? brandRes;
-  const { data: productsData } = await getAllProducts();
-  const allProducts: ProductI[] = productsData ?? [];
-  const products = allProducts.filter((p) => p.brand?._id === brandId || p.brand?.slug === brand?.slug);
+  const { data: products } = await getAllProducts({ brand: brandId });
 
   return (
     <main className="min-h-screen">

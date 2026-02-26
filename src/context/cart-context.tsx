@@ -1,13 +1,17 @@
 "use client";
 import { CartItemI } from "@/interface/cart";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { getCart, addToCart as addToCartApi, updateCartItem, removeFromCart } from "@/services/cart.services";
 
 export interface CartContextType {
   items: CartItemI[];
   loading: boolean;
   totalPrice: number;
-  addToCart: (item: CartItemI) => void;
+  cartId: string | null;
+  refreshCart: () => Promise<void>;
+  addToCart: (productId: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
 }
@@ -16,52 +20,90 @@ const CartContext = createContext<CartContextType>({} as CartContextType);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItemI[]>([]);
+  const [cartId, setCartId] = useState<string | null>(null);
+  const [totalPrice, setTotalPrice] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-  // حساب السعر الكلي
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const fetchCart = async () => {
+    if (status !== "authenticated" || !session?.token) return;
 
-  // إضافة منتج للكارت
-  const addToCart = (item: CartItemI) => {
-    setItems(prev => {
-      const exist = prev.find(i => i._id === item._id);
-      if (exist) {
-        // إذا موجود، نزيد الكمية
-        return prev.map(i =>
-          i._id === item._id
-            ? { ...i, quantity: i.quantity + item.quantity }
-            : i
-        );
+    setLoading(true);
+    try {
+      const res = await getCart(session.token);
+      if (res?.status === "success" || res?.data) {
+        const cartData = res.data;
+        setItems(cartData.products?.map((p: any) => ({
+          _id: p._id,
+          product: p.product,
+          quantity: p.count || p.quantity,
+          price: p.price
+        })) || []);
+        setCartId(cartData._id);
+        setTotalPrice(cartData.totalCartPrice);
       }
-      // إذا مش موجود، نضيفه جديد
-      return [...prev, item];
-    });
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchCart();
+    } else if (status === "unauthenticated") {
+      setItems([]);
+      setCartId(null);
+      setTotalPrice(0);
+    }
+  }, [status, session?.token]);
+
+  const addToCart = async (productId: string) => {
+    if (status !== "authenticated" || !session?.token) {
+      toast.error("Please login to add to cart");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await addToCartApi(productId, 1, session.token);
+      if (res?.status === "success") {
+        toast.success("Added to cart");
+        await fetchCart();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add to cart");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateQuantity = async (itemId: string, quantity: number) => {
+    if (!session?.token) return;
     setLoading(true);
     try {
-      setItems(prev =>
-        prev.map(item =>
-          item._id === itemId ? { ...item, quantity } : item
-        )
-      );
-    } catch {
-      toast.error("Failed to update");
+      const res = await updateCartItem(itemId, quantity, session.token);
+      if (res?.status === "success") {
+        await fetchCart();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update quantity");
     } finally {
       setLoading(false);
     }
   };
 
   const removeItem = async (itemId: string) => {
+    if (!session?.token) return;
     setLoading(true);
     try {
-      setItems(prev => prev.filter(item => item._id !== itemId));
-    } catch {
-      toast.error("Failed to remove");
+      const res = await removeFromCart(itemId, session.token);
+      if (res?.status === "success") {
+        toast.success("Item removed");
+        await fetchCart();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove item");
     } finally {
       setLoading(false);
     }
@@ -69,7 +111,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <CartContext.Provider
-      value={{ items, loading, totalPrice, addToCart, updateQuantity, removeItem }}
+      value={{
+        items,
+        loading,
+        totalPrice,
+        cartId,
+        refreshCart: fetchCart,
+        addToCart,
+        updateQuantity,
+        removeItem
+      }}
     >
       {children}
     </CartContext.Provider>

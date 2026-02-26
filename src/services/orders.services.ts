@@ -27,3 +27,18 @@ export async function createOrder(
     operation: "create order",
   });
 }
+
+export async function createCheckoutSession(
+  cartId: string,
+  token: string,
+  origin: string
+): Promise<any> {
+  if (!API_URL) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
+  const url = `${API_URL}/orders/checkout-session/${cartId}?url=${origin}`;
+
+  return apiCall<any>(url, {
+    method: "POST",
+    token,
+    operation: "create checkout session",
+  });
+}

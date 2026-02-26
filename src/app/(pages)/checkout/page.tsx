@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "@/context/cart-context";
-import { createOrder } from "@/services/orders.services";
+import { createOrder, createCheckoutSession } from "@/services/orders.services";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import Link from "next/link";
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { items, totalPrice, loading: cartLoading } = useCart();
+  const { items, totalPrice, cartId, loading: cartLoading } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [address, setAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -52,12 +52,24 @@ export default function CheckoutPage() {
     if (!token) return;
     setSubmitting(true);
     try {
+      if (paymentMethod === "online") {
+        if (!cartId) throw new Error("Cart not found");
+        const origin = window.location.origin;
+        const res = await createCheckoutSession(cartId, token, origin);
+        if (res?.status === "success" && res?.session?.url) {
+          window.location.href = res.session.url;
+          return;
+        }
+        throw new Error(res?.message || "Failed to initiate online payment");
+      }
+
       const res = (await createOrder(token, {
-        paymentMethod: paymentMethod === "online" ? "online" : "cash",
+        paymentMethod: "cash",
         shippingAddress: address || undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       })) as any;
-      if (res?.message === "Success" || res?.status === "success" || res?.data?.order) {
+
+      if (res?.status === "success" || res?.message === "Success") {
         toast.success("Order placed successfully.");
         router.push("/your-orders");
       } else {
