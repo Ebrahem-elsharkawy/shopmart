@@ -39,7 +39,7 @@ export default function CartComponent() {
         ) : (
           <>
             <ul className="space-y-4">
-              {items.map(item => {
+              {(Array.isArray(items) ? items : []).map((item) => {
                 const productId = item.product._id;
                 const imageSrc = item.product.imageCover || FALLBACK_IMAGE;
 

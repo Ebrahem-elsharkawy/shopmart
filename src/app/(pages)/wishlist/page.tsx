@@ -39,7 +39,7 @@ export default function WishlistPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {items.map((item) => {
+            {(Array.isArray(items) ? items : []).map((item) => {
               const product = item.product;
               const id = product?._id ?? product?.id ?? "";
               return (

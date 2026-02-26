@@ -74,7 +74,7 @@ function ProductsList() {
         <h1 className="text-2xl font-bold mb-8">Search results for "{search}"</h1>
       )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {products.map((product) => (
+          {(Array.isArray(products) ? products : []).map((product: ProductI) => (
             <Card key={product._id} className="flex flex-col">
               <Link href={`/products/${product._id}`}>
                 <Image

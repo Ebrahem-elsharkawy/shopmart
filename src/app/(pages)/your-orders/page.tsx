@@ -76,7 +76,7 @@ export default function YourOrdersPage() {
         </div>
       ) : (
         <ul className="space-y-6">
-          {orders.map((order) => (
+          {(Array.isArray(orders) ? orders : []).map((order) => (
             <li key={order._id} className="border rounded-xl p-6 bg-white">
               <div className="flex flex-wrap justify-between gap-2 mb-4">
                 <span className="font-mono text-sm text-zinc-500">#{order._id.slice(-8)}</span>
