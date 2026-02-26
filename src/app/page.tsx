@@ -17,10 +17,10 @@ export default async function Home() {
     getAllBrands(),
     getAllCategories(),
   ]);
-  const products: ProductI[] = productsRes?.data ?? [];
-  const brands: BrandI[] = brandsRes?.data ?? brandsRes ?? [];
-  const categories: CategoryI[] = categoriesRes?.data ?? categoriesRes ?? [];
-  const featured = Array.isArray(products) ? products.slice(0, 8) : [];
+  const products = productsRes?.data ?? [];
+  const brands = brandsRes?.data ?? [];
+  const categories = categoriesRes?.data ?? [];
+  const featured = products.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -57,7 +57,7 @@ export default async function Home() {
           </Button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          {featured.map((prod) => (
+          {featured.map((prod: ProductI) => (
             <Link key={prod._id} href={`/products/${prod._id}`} className="group">
               <div className="rounded-xl border bg-white overflow-hidden transition shadow hover:shadow-lg">
                 <div className="relative aspect-square">
@@ -96,7 +96,7 @@ export default async function Home() {
         <section className="max-w-7xl mx-auto py-10 sm:py-16 px-4 sm:px-6 border-t">
           <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8">Shop by brand</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-            {brands.slice(0, 10).map((brand) => (
+            {brands.slice(0, 10).map((brand: BrandI) => (
               <Link
                 key={brand._id}
                 href={`/brands/${brand._id}`}
@@ -134,7 +134,7 @@ export default async function Home() {
 
           <Carousel className="w-full">
             <CarouselContent className="-ml-4">
-              {categories.map((cat) => (
+              {categories.map((cat: CategoryI) => (
                 <CarouselItem key={cat._id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <Link
                     href={`/categories/${cat._id}`}
